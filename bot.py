@@ -450,23 +450,37 @@ async def buttons(message: types.Message):
 
         await message.answer(text)
 
+
+
 # =========================================
 # АВТОНАПОМИНАНИЯ
 # =========================================
+
+last_trigger = set()
 
 async def auto_reminders():
 
     while True:
 
         now = datetime.now(
-    ZoneInfo("Europe/Rome")
-)
+            ZoneInfo("Europe/Rome")
+        )
+
+        current = now.strftime(
+            "%Y-%m-%d %H:%M"
+        )
 
         # =====================================
         # ОТКРЫТИЕ ТОЧКИ
         # =====================================
 
-        if now.hour == 9 and now.minute == 0:
+        if (
+            now.hour == 9
+            and now.minute == 0
+            and current not in last_trigger
+        ):
+
+            last_trigger.add(current)
 
             await bot.send_message(
 
@@ -488,7 +502,13 @@ async def auto_reminders():
         # ЗАКРЫТИЕ ТОЧКИ
         # =====================================
 
-        if now.hour == 20 and now.minute == 45:
+        if (
+            now.hour == 20
+            and now.minute == 45
+            and current not in last_trigger
+        ):
+
+            last_trigger.add(current)
 
             await bot.send_message(
 
@@ -514,7 +534,10 @@ async def auto_reminders():
             now.weekday() == 6
             and now.hour == 12
             and now.minute == 0
+            and current not in last_trigger
         ):
+
+            last_trigger.add(current)
 
             await bot.send_message(
 
@@ -534,7 +557,10 @@ async def auto_reminders():
             now.weekday() == 3
             and now.hour == 12
             and now.minute == 0
+            and current not in last_trigger
         ):
+
+            last_trigger.add(current)
 
             duty_text = "\n".join(
                 [f"• {name}" for name in office_duty]
@@ -568,7 +594,10 @@ async def auto_reminders():
             and now.month in [2, 4, 6, 8, 10, 12]
             and now.hour == 12
             and now.minute == 0
+            and current not in last_trigger
         ):
+
+            last_trigger.add(current)
 
             await bot.send_message(
 
@@ -579,7 +608,7 @@ async def auto_reminders():
                 "Сегодня оплата аренды офиса 💸"
             )
 
-        await asyncio.sleep(60)
+        await asyncio.sleep(20)
 
 # =========================================
 # MAIN
