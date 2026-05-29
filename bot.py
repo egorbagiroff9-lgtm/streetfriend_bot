@@ -39,7 +39,16 @@ office_duty = [
 def is_private(message: types.Message):
 
     return message.chat.type == "private"
+# =========================================
+# МОЙ ID
+# =========================================
 
+@dp.message(Command("myid"))
+async def myid(message: types.Message):
+
+    await message.answer(
+        f"🆔 Твой ID:\n\n{message.from_user.id}"
+    )
 # =========================================
 # /START
 # =========================================
