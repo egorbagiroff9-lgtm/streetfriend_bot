@@ -483,7 +483,149 @@ async def status(message: types.Message):
         "• аренда\n"
         "• общак\n"
     )
+# =========================================
+# /PING
+# =========================================
 
+@dp.message(Command("ping"))
+async def ping(message: types.Message):
+
+    if not is_private(message):
+        return
+
+    await message.answer(
+        "🏓 PONG\n\nБот работает нормально ✅"
+    )
+
+# =========================================
+# /TIME
+# =========================================
+
+@dp.message(Command("time"))
+async def italy_time(message: types.Message):
+
+    if not is_private(message):
+        return
+
+    now = datetime.now(
+        ZoneInfo("Europe/Rome")
+    )
+
+    await message.answer(
+
+        "🇮🇹 ВРЕМЯ В ИТАЛИИ\n\n"
+
+        f"{now.strftime('%d.%m.%Y')}\n"
+        f"{now.strftime('%H:%M:%S')}"
+    )
+
+# =========================================
+# /STATUS
+# =========================================
+
+@dp.message(Command("status"))
+async def status(message: types.Message):
+
+    if not is_private(message):
+        return
+
+    now = datetime.now(
+        ZoneInfo("Europe/Rome")
+    )
+
+    await message.answer(
+
+        "🤖 STREET FRIENDS STATUS\n\n"
+
+        "✅ Бот активен\n"
+        "✅ Напоминания работают\n"
+        "✅ Сервер онлайн\n\n"
+
+        f"🕒 Italy Time:\n"
+        f"{now.strftime('%d.%m.%Y %H:%M')}\n\n"
+
+        f"👥 Команда: {len(TEAM)}\n"
+        f"🧹 Дежурных: {len(office_duty)}\n\n"
+
+        "🔔 Активные напоминания:\n\n"
+
+        "• открытие точки\n"
+        "• закрытие точки\n"
+        "• уборка офиса\n"
+        "• аренда\n"
+        "• общак\n"
+        "• смены\n"
+    )
+
+# =========================================
+# /TESTREMIND
+# =========================================
+
+@dp.message(Command("testremind"))
+async def test_remind(message: types.Message):
+
+    if not is_private(message):
+        return
+
+    if not is_admin(message):
+
+        await message.answer(
+            "❌ Только администратор"
+        )
+
+        return
+
+    await bot.send_message(
+
+        GROUP_ID,
+
+        "🧪 ТЕСТ НАПОМИНАНИЯ\n\n"
+
+        "Если ты видишь это сообщение —\n"
+        "автонапоминания работают ✅"
+    )
+
+    await message.answer(
+        "✅ Тест отправлен в группу"
+    )
+
+# =========================================
+# /COMMANDS
+# =========================================
+
+@dp.message(Command("commands"))
+async def commands(message: types.Message):
+
+    if not is_private(message):
+        return
+
+    text = (
+
+        "⚙️ STREET FRIENDS COMMANDS\n\n"
+
+        "/start — запуск\n"
+        "/help — помощь\n"
+        "/commands — список команд\n"
+        "/status — статус бота\n"
+        "/ping — проверка бота\n"
+        "/time — время Италии\n"
+        "/team — команда\n"
+        "/duty — дежурные\n"
+        "/restart — перезапуск\n"
+    )
+
+    if is_admin(message):
+
+        text += (
+
+            "\n⚙️ ADMIN\n\n"
+
+            "/announce — анонс\n"
+            "/setduty — сменить дежурных\n"
+            "/testremind — тест напоминания\n"
+        )
+
+    await message.answer(text)
 # =========================================
 # АВТОНАПОМИНАНИЯ
 # =========================================
