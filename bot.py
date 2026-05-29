@@ -1,6 +1,7 @@
 import asyncio
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
@@ -457,7 +458,9 @@ async def auto_reminders():
 
     while True:
 
-        now = datetime.now()
+        now = datetime.now(
+    ZoneInfo("Europe/Rome")
+)
 
         # =====================================
         # ОТКРЫТИЕ ТОЧКИ
