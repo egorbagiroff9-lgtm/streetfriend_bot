@@ -1,5 +1,6 @@
 import asyncio
 import os
+from datetime import datetime
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
@@ -15,46 +16,83 @@ TOKEN = os.getenv("TOKEN")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
+# =========================================
+# НАСТРОЙКИ
+# =========================================
+
+# ВСТАВЬ СЮДА ID ВАШЕЙ ГРУППЫ
+GROUP_ID = -1003462381248
+
+TEAM = [
+    "Егор",
+    "Лена",
+    "Аня",
+    "Марсель",
+    "Никита",
+    "Тарас",
+    "Юля",
+    "Марічка",
+]
+
 # Языки пользователей
 user_languages = {}
 
-# Тексты
+# =========================================
+# ТЕКСТЫ
+# =========================================
+
 texts = {
+
     "ru": {
         "welcome": "🔥 Street Friends Bot\nДобро пожаловать!",
-        "choose_language": "🌍 Выберите язык:",
+
         "money": "💰 Общак",
-        "cleaning": "🧹 Закрытие смены",
-        "opening": "🌅 Открытие точки",
-        "rent": "🏠 Аренда офиса",
+        "cleaning": "🧹 Закрытие точки",
+        "opening": "☀️ Открытие точки",
+        "rent": "🏠 Аренда",
         "team": "👥 Команда",
+        "fests": "🎉 Фесты",
+        "schedule": "📅 Смены",
+        "points": "📍 Точки",
         "settings": "⚙️ Настройки",
+        "back": "⬅️ Назад",
     },
 
     "ua": {
         "welcome": "🔥 Street Friends Bot\nЛаскаво просимо!",
-        "choose_language": "🌍 Оберіть мову:",
+
         "money": "💰 Общак",
-        "cleaning": "🧹 Закриття зміни",
-        "opening": "🌅 Відкриття точки",
-        "rent": "🏠 Оренда офісу",
+        "cleaning": "🧹 Закриття точки",
+        "opening": "☀️ Відкриття точки",
+        "rent": "🏠 Оренда",
         "team": "👥 Команда",
+        "fests": "🎉 Фести",
+        "schedule": "📅 Зміни",
+        "points": "📍 Точки",
         "settings": "⚙️ Налаштування",
+        "back": "⬅️ Назад",
     },
 
     "it": {
         "welcome": "🔥 Street Friends Bot\nBenvenuto!",
-        "choose_language": "🌍 Scegli la lingua:",
+
         "money": "💰 Fondo comune",
-        "cleaning": "🧹 Chiusura turno",
-        "opening": "🌅 Apertura punto",
-        "rent": "🏠 Affitto ufficio",
+        "cleaning": "🧹 Chiusura punto",
+        "opening": "☀️ Apertura punto",
+        "rent": "🏠 Affitto",
         "team": "👥 Squadra",
+        "fests": "🎉 Festival",
+        "schedule": "📅 Turni",
+        "points": "📍 Punti",
         "settings": "⚙️ Impostazioni",
+        "back": "⬅️ Indietro",
     },
 }
 
-# Кнопки выбора языка
+# =========================================
+# КНОПКИ ВЫБОРА ЯЗЫКА
+# =========================================
+
 language_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
         [
@@ -62,13 +100,11 @@ language_keyboard = InlineKeyboardMarkup(
                 text="🇷🇺 Русский",
                 callback_data="lang_ru"
             ),
-
             InlineKeyboardButton(
                 text="🇺🇦 Українська",
                 callback_data="lang_ua"
             ),
         ],
-
         [
             InlineKeyboardButton(
                 text="🇮🇹 Italiano",
@@ -78,60 +114,63 @@ language_keyboard = InlineKeyboardMarkup(
     ]
 )
 
-# Главное меню
+# =========================================
+# ГЛАВНОЕ МЕНЮ
+# =========================================
+
 def get_menu(lang):
 
     return ReplyKeyboardMarkup(
         keyboard=[
 
             [
-                KeyboardButton(
-                    text=texts[lang]["money"]
-                )
+                KeyboardButton(text=texts[lang]["opening"]),
+                KeyboardButton(text=texts[lang]["cleaning"]),
             ],
 
             [
-                KeyboardButton(
-                    text=texts[lang]["cleaning"]
-                )
+                KeyboardButton(text=texts[lang]["money"]),
+                KeyboardButton(text=texts[lang]["rent"]),
             ],
 
             [
-                KeyboardButton(
-                    text=texts[lang]["opening"]
-                )
+                KeyboardButton(text=texts[lang]["schedule"]),
+                KeyboardButton(text=texts[lang]["points"]),
             ],
 
             [
-                KeyboardButton(
-                    text=texts[lang]["rent"]
-                )
+                KeyboardButton(text=texts[lang]["team"]),
+                KeyboardButton(text=texts[lang]["fests"]),
             ],
 
             [
-                KeyboardButton(
-                    text=texts[lang]["team"]
-                )
-            ],
-
-            [
-                KeyboardButton(
-                    text=texts[lang]["settings"]
-                )
+                KeyboardButton(text=texts[lang]["settings"]),
             ],
         ],
         resize_keyboard=True,
     )
 
+# =========================================
+# КНОПКА НАЗАД
+# =========================================
 
-# START
-# Получение ID чата
-@dp.message(Command("id"))
-async def get_chat_id(message: types.Message):
+def back_keyboard(lang):
 
-    await message.answer(
-        f"🆔 Chat ID:\n{message.chat.id}"
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(
+                    text=texts[lang]["back"]
+                )
+            ]
+        ],
+        resize_keyboard=True,
     )
+
+# =========================================
+# /START
+# =========================================
+
 @dp.message(Command("start"))
 async def start(message: types.Message):
 
@@ -140,8 +179,10 @@ async def start(message: types.Message):
         reply_markup=language_keyboard,
     )
 
+# =========================================
+# ВЫБОР ЯЗЫКА
+# =========================================
 
-# Выбор языка
 @dp.callback_query()
 async def language_selected(callback: types.CallbackQuery):
 
@@ -156,8 +197,10 @@ async def language_selected(callback: types.CallbackQuery):
 
     await callback.answer()
 
+# =========================================
+# МЕНЮ
+# =========================================
 
-# Кнопки меню
 @dp.message()
 async def menu_buttons(message: types.Message):
 
@@ -166,167 +209,293 @@ async def menu_buttons(message: types.Message):
         "ru"
     )
 
-    # ОБЩАК
-    if message.text == texts[lang]["money"]:
+    # =====================================
+    # НАЗАД
+    # =====================================
 
-        if lang == "ru":
-            await message.answer(
-                "💰 Напоминание:\n"
-                "Каждое воскресенье каждый участник кладет 25€ в общак."
-            )
-
-        elif lang == "ua":
-            await message.answer(
-                "💰 Нагадування:\n"
-                "Щонеділі кожен учасник кладе 25€ в общак."
-            )
-
-        elif lang == "it":
-            await message.answer(
-                "💰 Promemoria:\n"
-                "Ogni domenica ogni membro mette 25€ nel fondo comune."
-            )
-
-    # ЗАКРЫТИЕ СМЕНЫ
-    elif message.text == texts[lang]["cleaning"]:
-
-        if lang == "ru":
-            await message.answer(
-                "🧹 Закрытие смены:\n\n"
-                "1. Выключить программы фотоаппарата и печати\n"
-                "2. Выключить ноутбук и фотоаппарат\n"
-                "3. Залить краску в принтер и выключить его\n"
-                "4. Поставить точку и павербанки на зарядку\n"
-                "5. Убрать мусор и протереть точку\n"
-                "6. Выкинуть мусор с офиса"
-            )
-
-        elif lang == "ua":
-            await message.answer(
-                "🧹 Закриття зміни:\n\n"
-                "1. Вимкнути програми фотоапарата та друку\n"
-                "2. Вимкнути ноутбук та фотоапарат\n"
-                "3. Заправити принтер фарбою\n"
-                "4. Поставити точку та павербанки на зарядку\n"
-                "5. Прибрати сміття та протерти точку\n"
-                "6. Викинути сміття з офісу"
-            )
-
-        elif lang == "it":
-            await message.answer(
-                "🧹 Chiusura turno:\n\n"
-                "1. Spegnere programmi fotocamera e stampa\n"
-                "2. Spegnere laptop e fotocamera\n"
-                "3. Riempire stampante con inchiostro\n"
-                "4. Mettere in carica powerbank e punto\n"
-                "5. Pulire il punto\n"
-                "6. Buttare la spazzatura dell'ufficio"
-            )
-
-    # ОТКРЫТИЕ ТОЧКИ
-    elif message.text == texts[lang]["opening"]:
-
-        if lang == "ru":
-            await message.answer(
-                "🌅 Открытие точки:\n\n"
-                "1. Проверить заряд павербанков\n"
-                "2. Надежно зафиксировать зарядный кабель\n"
-                "3. Проверить наличие:\n"
-                "- краски\n"
-                "- резинок\n"
-                "- прищепок\n"
-                "- влажных салфеток\n"
-                "- дождевика\n"
-                "- зонта\n"
-                "4. Осмотреть точку на дефекты\n\n"
-                "🔥 И в бой!"
-            )
-
-        elif lang == "ua":
-            await message.answer(
-                "🌅 Відкриття точки:\n\n"
-                "1. Перевірити заряд павербанків\n"
-                "2. Надійно зафіксувати кабель\n"
-                "3. Перевірити наявність:\n"
-                "- фарби\n"
-                "- резинок\n"
-                "- прищіпок\n"
-                "- серветок\n"
-                "- дощовика\n"
-                "- парасолі\n"
-                "4. Оглянути точку на дефекти\n\n"
-                "🔥 Вперед!"
-            )
-
-        elif lang == "it":
-            await message.answer(
-                "🌅 Apertura punto:\n\n"
-                "1. Controllare powerbank\n"
-                "2. Fissare bene il cavo\n"
-                "3. Controllare presenza di:\n"
-                "- inchiostro\n"
-                "- elastici\n"
-                "- mollette\n"
-                "- salviette\n"
-                "- impermeabile\n"
-                "- ombrello\n"
-                "4. Controllare il punto\n\n"
-                "🔥 Andiamo!"
-            )
-
-    # АРЕНДА
-    elif message.text == texts[lang]["rent"]:
-
-        if lang == "ru":
-            await message.answer(
-                "🏠 Аренда офиса:\n"
-                "Оплата каждые 2 месяца.\n"
-                "Следующая оплата: 01.06"
-            )
-
-        elif lang == "ua":
-            await message.answer(
-                "🏠 Оренда офісу:\n"
-                "Оплата кожні 2 місяці.\n"
-                "Наступна оплата: 01.06"
-            )
-
-        elif lang == "it":
-            await message.answer(
-                "🏠 Affitto ufficio:\n"
-                "Pagamento ogni 2 mesi.\n"
-                "Prossimo pagamento: 01.06"
-            )
-
-    # КОМАНДА
-    elif message.text == texts[lang]["team"]:
+    if message.text == texts[lang]["back"]:
 
         await message.answer(
-            "🔥 STREET FRIENDS 🔥\n\n"
-            "Егор\n"
-            "Лена\n"
-            "Аня\n"
-            "Марсель\n"
-            "Никита\n"
-            "Тарас\n"
-            "Юля\n"
-            "Марічка"
+            "🏠 Главное меню",
+            reply_markup=get_menu(lang)
         )
 
+    # =====================================
+    # ОТКРЫТИЕ ТОЧКИ
+    # =====================================
+
+    elif message.text == texts[lang]["opening"]:
+
+        await message.answer(
+            "☀️ ОТКРЫТИЕ ТОЧКИ\n\n"
+
+            "1. Проверить заряд павербанков 🔋\n\n"
+
+            "2. Надежно подключить зарядный кабель 🔌\n\n"
+
+            "3. Проверить наличие:\n"
+            "• краски\n"
+            "• резинок\n"
+            "• прищепок\n"
+            "• влажных салфеток\n"
+            "• дождевика\n"
+            "• зонта\n\n"
+
+            "4. Осмотреть ТОЧКУ на дефекты 👀\n\n"
+
+            "🔥 И В БОЙ!",
+
+            reply_markup=back_keyboard(lang)
+        )
+
+    # =====================================
+    # ЗАКРЫТИЕ ТОЧКИ
+    # =====================================
+
+    elif message.text == texts[lang]["cleaning"]:
+
+        await message.answer(
+            "🌙 ЗАКРЫТИЕ СМЕНЫ\n\n"
+
+            "1. Выключить программы 📸\n\n"
+
+            "2. Выключить ноутбук и фотоаппарат 💻\n\n"
+
+            "3. Залить краску в принтер 🖨️\n\n"
+
+            "4. Поставить точку на зарядку 🔋\n\n"
+
+            "5. Убрать мусор 🧹\n\n"
+
+            "6. Протереть точку ✨\n\n"
+
+            "7. Выкинуть мусор из офиса 🗑️",
+
+            reply_markup=back_keyboard(lang)
+        )
+
+    # =====================================
+    # ОБЩАК
+    # =====================================
+
+    elif message.text == texts[lang]["money"]:
+
+        await message.answer(
+            "💰 ОБЩАК\n\n"
+
+            "Каждое воскресенье:\n"
+            "25€ с человека ❤️",
+
+            reply_markup=back_keyboard(lang)
+        )
+
+    # =====================================
+    # АРЕНДА
+    # =====================================
+
+    elif message.text == texts[lang]["rent"]:
+
+        await message.answer(
+            "🏠 АРЕНДА ОФИСА\n\n"
+
+            "Следующая оплата:\n"
+            "01.06\n\n"
+
+            "Далее каждые 2 месяца.",
+
+            reply_markup=back_keyboard(lang)
+        )
+
+    # =====================================
+    # СМЕНЫ
+    # =====================================
+
+    elif message.text == texts[lang]["schedule"]:
+
+        await message.answer(
+            "📅 СМЕНЫ\n\n"
+
+            "ТОЧКА 1 🟢\n"
+            "10:00 - 13:00\n"
+            "13:00 - 15:30\n"
+            "15:30 - 18:00\n"
+            "18:00 - 21:00\n\n"
+
+            "ТОЧКА 2 🔴\n"
+            "10:00 - 13:00\n"
+            "13:00 - 15:30\n"
+            "15:30 - 18:00\n"
+            "18:00 - 21:00",
+
+            reply_markup=back_keyboard(lang)
+        )
+
+    # =====================================
+    # ТОЧКИ
+    # =====================================
+
+    elif message.text == texts[lang]["points"]:
+
+        await message.answer(
+            "📍 STREET FRIENDS\n\n"
+
+            "🟢 ТОЧКА 1 — Зеленая\n"
+            "🔴 ТОЧКА 2 — Красная\n\n"
+
+            "📸 Автономные фототочки.\n"
+            "Работаем на ТОЛЕДО ❤️",
+
+            reply_markup=back_keyboard(lang)
+        )
+
+    # =====================================
+    # КОМАНДА
+    # =====================================
+
+    elif message.text == texts[lang]["team"]:
+
+        team_text = "\n".join(
+            [f"• {name}" for name in TEAM]
+        )
+
+        await message.answer(
+            f"👥 STREET FRIENDS TEAM\n\n{team_text}",
+            reply_markup=back_keyboard(lang)
+        )
+
+    # =====================================
+    # ФЕСТЫ
+    # =====================================
+
+    elif message.text == texts[lang]["fests"]:
+
+        await message.answer(
+            "🎉 ФЕСТЫ\n\n"
+            "Раздел пока в разработке 🔥",
+
+            reply_markup=back_keyboard(lang)
+        )
+
+    # =====================================
     # НАСТРОЙКИ
+    # =====================================
+
     elif message.text == texts[lang]["settings"]:
 
         await message.answer(
-            "⚙️ Чтобы изменить язык — нажмите /start"
+            "⚙️ НАСТРОЙКИ\n\n"
+            "Чтобы сменить язык — нажмите /start",
+
+            reply_markup=back_keyboard(lang)
         )
 
+# =========================================
+# АВТОНАПОМИНАНИЯ
+# =========================================
+
+async def auto_reminders():
+
+    while True:
+
+        now = datetime.now()
+
+        # =====================================
+        # УТРЕННЕЕ НАПОМИНАНИЕ
+        # =====================================
+
+        if now.hour == 9 and now.minute == 0:
+
+            await bot.send_message(
+                GROUP_ID,
+
+                "☀️ STREET FRIENDS\n\n"
+
+                "Напоминание об открытии ТОЧКИ:\n\n"
+
+                "• проверить павербанки 🔋\n"
+                "• проверить шнур питания 🔌\n"
+                "• проверить расходники 📦\n"
+                "• осмотреть ТОЧКУ 👀\n\n"
+
+                "🔥 Хорошей работы на ТОЛЕДО!"
+            )
+
+        # =====================================
+        # ВЕЧЕРНЕЕ НАПОМИНАНИЕ
+        # =====================================
+
+        if now.hour == 20 and now.minute == 45:
+
+            await bot.send_message(
+                GROUP_ID,
+
+                "🌙 STREET FRIENDS\n\n"
+
+                "Напоминание о закрытии ТОЧКИ:\n\n"
+
+                "• выключить программы 📸\n"
+                "• выключить ноутбук 💻\n"
+                "• зарядить ТОЧКУ 🔋\n"
+                "• зарядить павербанки 🔌\n"
+                "• убрать мусор 🧹"
+            )
+
+        # =====================================
+        # ОБЩАК
+        # =====================================
+
+        if (
+            now.weekday() == 6 and
+            now.hour == 12 and
+            now.minute == 0
+        ):
+
+            await bot.send_message(
+                GROUP_ID,
+
+                "💰 STREET FRIENDS\n\n"
+
+                "Напоминание:\n"
+                "Сегодня каждый участник кладет 25€ в ОБЩАК ❤️"
+            )
+
+        # =====================================
+        # АРЕНДА
+        # =====================================
+
+        if (
+            now.day == 1 and
+            now.month in [2, 4, 6, 8, 10, 12] and
+            now.hour == 12 and
+            now.minute == 0
+        ):
+
+            await bot.send_message(
+                GROUP_ID,
+
+                "🏠 STREET FRIENDS\n\n"
+
+                "Напоминание:\n"
+                "Сегодня оплата аренды офиса 💸"
+            )
+
+        await asyncio.sleep(60)
+
+# =========================================
+# MAIN
+# =========================================
 
 async def main():
 
     print("BOT STARTED")
 
+    asyncio.create_task(
+        auto_reminders()
+    )
+
     await dp.start_polling(bot)
 
+# =========================================
 
 if __name__ == "__main__":
     asyncio.run(main())
