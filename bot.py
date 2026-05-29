@@ -171,16 +171,17 @@ def back_keyboard(lang):
 # =========================================
 # УДАЛЕНИЕ ПРЕДЫДУЩИХ СООБЩЕНИЙ БОТА
 # =========================================
-    # Удаляем сообщение пользователя
-    try:
-        await message.delete()
-    except:
-        pass
+    
 async def send_clean_message(
     message: types.Message,
     text,
     reply_markup=None
 ):
+    # Удаляем сообщение пользователя
+    try:
+        await message.delete()
+    except:
+        pass
 
     chat_id = message.chat.id
 
