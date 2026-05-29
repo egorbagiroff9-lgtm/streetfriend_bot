@@ -20,7 +20,6 @@ dp = Dispatcher()
 # НАСТРОЙКИ
 # =========================================
 
-# ВСТАВЬ СЮДА ID ВАШЕЙ ГРУППЫ
 GROUP_ID = -1003462381248
 
 TEAM = [
@@ -34,8 +33,15 @@ TEAM = [
     "Марічка",
 ]
 
+# Люди на уборке офиса
+office_duty = [
+    "Егор",
+    "Лена",
+]
+
 # Языки пользователей
 user_languages = {}
+
 # Последние сообщения бота
 last_bot_messages = {}
 
@@ -92,7 +98,7 @@ texts = {
 }
 
 # =========================================
-# КНОПКИ ВЫБОРА ЯЗЫКА
+# КНОПКИ ЯЗЫКА
 # =========================================
 
 language_keyboard = InlineKeyboardMarkup(
@@ -168,15 +174,17 @@ def back_keyboard(lang):
         ],
         resize_keyboard=True,
     )
+
 # =========================================
-# УДАЛЕНИЕ ПРЕДЫДУЩИХ СООБЩЕНИЙ БОТА
+# ЧИСТЫЕ СООБЩЕНИЯ
 # =========================================
-    
+
 async def send_clean_message(
     message: types.Message,
     text,
     reply_markup=None
 ):
+
     # Удаляем сообщение пользователя
     try:
         await message.delete()
@@ -206,6 +214,7 @@ async def send_clean_message(
 
     # Сохраняем ID сообщения
     last_bot_messages[chat_id] = sent_message.message_id
+
 # =========================================
 # /START
 # =========================================
@@ -213,10 +222,12 @@ async def send_clean_message(
 @dp.message(Command("start"))
 async def start(message: types.Message):
 
-    await message.answer(
+    await send_clean_message(
+        message,
         "🌍 Choose language / Оберіть мову / Scegli lingua",
         reply_markup=language_keyboard,
     )
+
 # =========================================
 # /RESTART
 # =========================================
@@ -224,9 +235,26 @@ async def start(message: types.Message):
 @dp.message(Command("restart"))
 async def restart(message: types.Message):
 
-    chat_id = message.chat.id
+    await send_clean_message(
+        message,
+        "🔄 Бот перезапущен\n\n🌍 Choose language / Оберіть мову / Scegli lingua",
+        reply_markup=language_keyboard,
+    )
 
-    # Удаляем последнее сообщение бота
+# =========================================
+# ВЫБОР ЯЗЫКА
+# =========================================
+
+@dp.callback_query()
+async def language_selected(callback: types.CallbackQuery):
+
+    lang = callback.data.split("_")[1]
+
+    user_languages[callback.from_user.id] = lang
+
+    # Удаляем старое сообщение бота
+    chat_id = callback.message.chat.id
+
     if chat_id in last_bot_messages:
 
         try:
@@ -239,29 +267,14 @@ async def restart(message: types.Message):
         except:
             pass
 
-    # Показываем выбор языка заново
-    sent_message = await message.answer(
-        "🔄 Бот перезапущен\n\n🌍 Choose language / Оберіть мову / Scegli lingua",
-        reply_markup=language_keyboard,
-    )
-
-    # Сохраняем новое сообщение
-    last_bot_messages[chat_id] = sent_message.message_id
-# =========================================
-# ВЫБОР ЯЗЫКА
-# =========================================
-
-@dp.callback_query()
-async def language_selected(callback: types.CallbackQuery):
-
-    lang = callback.data.split("_")[1]
-
-    user_languages[callback.from_user.id] = lang
-
-    await callback.message.answer(
+    sent_message = await callback.message.answer(
         texts[lang]["welcome"],
         reply_markup=get_menu(lang),
     )
+
+    last_bot_messages[
+        callback.message.chat.id
+    ] = sent_message.message_id
 
     await callback.answer()
 
@@ -283,18 +296,21 @@ async def menu_buttons(message: types.Message):
 
     if message.text == texts[lang]["back"]:
 
-        await message.answer(
+        await send_clean_message(
+            message,
             "🏠 Главное меню",
             reply_markup=get_menu(lang)
         )
 
     # =====================================
-    # ОТКРЫТИЕ ТОЧКИ
+    # ОТКРЫТИЕ
     # =====================================
 
     elif message.text == texts[lang]["opening"]:
 
-        await message.answer(
+        await send_clean_message(
+            message,
+
             "☀️ ОТКРЫТИЕ ТОЧКИ\n\n"
 
             "1. Проверить заряд павербанков 🔋\n\n"
@@ -317,12 +333,14 @@ async def menu_buttons(message: types.Message):
         )
 
     # =====================================
-    # ЗАКРЫТИЕ ТОЧКИ
+    # ЗАКРЫТИЕ
     # =====================================
 
     elif message.text == texts[lang]["cleaning"]:
 
-        await message.answer(
+        await send_clean_message(
+            message,
+
             "🌙 ЗАКРЫТИЕ СМЕНЫ\n\n"
 
             "1. Выключить программы 📸\n\n"
@@ -348,7 +366,9 @@ async def menu_buttons(message: types.Message):
 
     elif message.text == texts[lang]["money"]:
 
-        await message.answer(
+        await send_clean_message(
+            message,
+
             "💰 ОБЩАК\n\n"
 
             "Каждое воскресенье:\n"
@@ -363,7 +383,9 @@ async def menu_buttons(message: types.Message):
 
     elif message.text == texts[lang]["rent"]:
 
-        await message.answer(
+        await send_clean_message(
+            message,
+
             "🏠 АРЕНДА ОФИСА\n\n"
 
             "Следующая оплата:\n"
@@ -380,16 +402,18 @@ async def menu_buttons(message: types.Message):
 
     elif message.text == texts[lang]["schedule"]:
 
-        await message.answer(
+        await send_clean_message(
+            message,
+
             "📅 СМЕНЫ\n\n"
 
-            "ТОЧКА 1 🟢\n"
+            "🟢 ТОЧКА 1\n"
             "10:00 - 13:00\n"
             "13:00 - 15:30\n"
             "15:30 - 18:00\n"
             "18:00 - 21:00\n\n"
 
-            "ТОЧКА 2 🔴\n"
+            "🔴 ТОЧКА 2\n"
             "10:00 - 13:00\n"
             "13:00 - 15:30\n"
             "15:30 - 18:00\n"
@@ -404,7 +428,9 @@ async def menu_buttons(message: types.Message):
 
     elif message.text == texts[lang]["points"]:
 
-        await message.answer(
+        await send_clean_message(
+            message,
+
             "📍 STREET FRIENDS\n\n"
 
             "🟢 ТОЧКА 1 — Зеленая\n"
@@ -426,7 +452,8 @@ async def menu_buttons(message: types.Message):
             [f"• {name}" for name in TEAM]
         )
 
-        await message.answer(
+        await send_clean_message(
+            message,
             f"👥 STREET FRIENDS TEAM\n\n{team_text}",
             reply_markup=back_keyboard(lang)
         )
@@ -437,7 +464,9 @@ async def menu_buttons(message: types.Message):
 
     elif message.text == texts[lang]["fests"]:
 
-        await message.answer(
+        await send_clean_message(
+            message,
+
             "🎉 ФЕСТЫ\n\n"
             "Раздел пока в разработке 🔥",
 
@@ -450,9 +479,21 @@ async def menu_buttons(message: types.Message):
 
     elif message.text == texts[lang]["settings"]:
 
-        await message.answer(
+        duty_text = "\n".join(
+            [f"• {name}" for name in office_duty]
+        )
+
+        await send_clean_message(
+            message,
+
             "⚙️ НАСТРОЙКИ\n\n"
-            "Чтобы сменить язык — нажмите /start",
+
+            "🧹 Дежурные по офису:\n\n"
+
+            f"{duty_text}\n\n"
+
+            "Чтобы сменить язык — /start\n"
+            "Чтобы перезапустить — /restart",
 
             reply_markup=back_keyboard(lang)
         )
@@ -467,9 +508,7 @@ async def auto_reminders():
 
         now = datetime.now()
 
-        # =====================================
-        # УТРЕННЕЕ НАПОМИНАНИЕ
-        # =====================================
+        # УТРО
 
         if now.hour == 9 and now.minute == 0:
 
@@ -488,9 +527,7 @@ async def auto_reminders():
                 "🔥 Хорошей работы на ТОЛЕДО!"
             )
 
-        # =====================================
-        # ВЕЧЕРНЕЕ НАПОМИНАНИЕ
-        # =====================================
+        # ВЕЧЕР
 
         if now.hour == 20 and now.minute == 45:
 
@@ -508,10 +545,7 @@ async def auto_reminders():
                 "• убрать мусор 🧹"
             )
 
-        # =====================================
-                # =====================================
-        # ДЕЖУРСТВО В ОФИСЕ
-        # =====================================
+        # УБОРКА ОФИСА
 
         if (
             now.weekday() == 3 and
@@ -539,8 +573,8 @@ async def auto_reminders():
                 "• проверить зарядки\n"
                 "• навести порядок ❤️"
             )
+
         # ОБЩАК
-        # =====================================
 
         if (
             now.weekday() == 6 and
@@ -553,13 +587,10 @@ async def auto_reminders():
 
                 "💰 STREET FRIENDS\n\n"
 
-                "Напоминание:\n"
                 "Сегодня каждый участник кладет 25€ в ОБЩАК ❤️"
             )
 
-        # =====================================
         # АРЕНДА
-        # =====================================
 
         if (
             now.day == 1 and
@@ -573,7 +604,6 @@ async def auto_reminders():
 
                 "🏠 STREET FRIENDS\n\n"
 
-                "Напоминание:\n"
                 "Сегодня оплата аренды офиса 💸"
             )
 
