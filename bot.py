@@ -1183,21 +1183,3 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
-
-    # =====================================
-# АВТОНАПОМИНАНИЯ
-# =====================================
-
-asyncio.create_task(
-    auto_reminders()
-)
-
-# =====================================
-# НАПОМИНАНИЯ О СМЕНАХ
-# =====================================
-
-asyncio.create_task(
-    auto_shift_reminders()
-)
-
-await dp.start_polling(bot)
