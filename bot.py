@@ -450,7 +450,39 @@ async def buttons(message: types.Message):
 
         await message.answer(text)
 
+# =========================================
+# /STATUS
+# =========================================
 
+@dp.message(Command("status"))
+async def status(message: types.Message):
+
+    if not is_private(message):
+        return
+
+    now = datetime.now(
+        ZoneInfo("Europe/Rome")
+    )
+
+    await message.answer(
+
+        "🤖 STREET FRIENDS STATUS\n\n"
+
+        "✅ Бот работает\n\n"
+
+        f"🕒 Время Италия:\n"
+        f"{now.strftime('%d.%m.%Y %H:%M')}\n\n"
+
+        f"👥 Команда: {len(TEAM)} человек\n"
+        f"🧹 Дежурных: {len(office_duty)}\n\n"
+
+        "🔔 Активны напоминания:\n"
+        "• открытие точки\n"
+        "• закрытие точки\n"
+        "• уборка офиса\n"
+        "• аренда\n"
+        "• общак\n"
+    )
 
 # =========================================
 # АВТОНАПОМИНАНИЯ
