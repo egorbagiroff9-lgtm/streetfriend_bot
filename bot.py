@@ -36,6 +36,8 @@ TEAM = [
 
 # Языки пользователей
 user_languages = {}
+# Последние сообщения бота
+last_bot_messages = {}
 
 # =========================================
 # ТЕКСТЫ
@@ -166,7 +168,39 @@ def back_keyboard(lang):
         ],
         resize_keyboard=True,
     )
+# =========================================
+# УДАЛЕНИЕ ПРЕДЫДУЩИХ СООБЩЕНИЙ БОТА
+# =========================================
 
+async def send_clean_message(
+    message: types.Message,
+    text,
+    reply_markup=None
+):
+
+    chat_id = message.chat.id
+
+    # Удаляем старое сообщение бота
+    if chat_id in last_bot_messages:
+
+        try:
+
+            await bot.delete_message(
+                chat_id,
+                last_bot_messages[chat_id]
+            )
+
+        except:
+            pass
+
+    # Отправляем новое сообщение
+    sent_message = await message.answer(
+        text,
+        reply_markup=reply_markup
+    )
+
+    # Сохраняем ID сообщения
+    last_bot_messages[chat_id] = sent_message.message_id
 # =========================================
 # /START
 # =========================================
