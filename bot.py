@@ -34,22 +34,26 @@ office_duty = [
 ]
 
 # =========================================
-# КОМАНДЫ ТОЛЬКО В ЛС
+# СОСТОЯНИЯ
+# =========================================
+
+waiting_announce = {}
+
+# =========================================
+# ПРОВЕРКИ
 # =========================================
 
 def is_private(message: types.Message):
 
     return message.chat.type == "private"
-    
-# =========================================
-# ПРОВЕРКА АДМИНА
-# =========================================
+
 
 def is_admin(message: types.Message):
 
     return message.from_user.id == ADMIN_ID
+
 # =========================================
-# МОЙ ID
+# /MYID
 # =========================================
 
 @dp.message(Command("myid"))
@@ -58,6 +62,7 @@ async def myid(message: types.Message):
     await message.answer(
         f"🆔 Твой ID:\n\n{message.from_user.id}"
     )
+
 # =========================================
 # /START
 # =========================================
@@ -65,7 +70,6 @@ async def myid(message: types.Message):
 @dp.message(Command("start"))
 async def start(message: types.Message):
 
-    # Игнорируем группы
     if not is_private(message):
         return
 
@@ -75,13 +79,56 @@ async def start(message: types.Message):
 
         "Бот работает как система напоминаний для команды ❤️\n\n"
 
-        "Доступные команды:\n\n"
+        "📌 Основные команды:\n\n"
 
         "/team — команда\n"
         "/duty — дежурные\n"
-        "/setduty — сменить дежурных\n"
+        "/help — все команды\n"
         "/restart — перезапуск\n"
     )
+
+# =========================================
+# /HELP
+# =========================================
+
+@dp.message(Command("help"))
+async def help_command(message: types.Message):
+
+    if not is_private(message):
+        return
+
+    text = (
+
+        "👥 ДОСТУПНЫЕ КОМАНДЫ\n\n"
+
+        "/start — запуск бота\n"
+        "/restart — перезапуск\n"
+        "/help — список команд\n"
+        "/team — команда\n"
+        "/duty — дежурные\n\n"
+
+        "📌 Напоминания:\n"
+        "• открытие точки\n"
+        "• закрытие точки\n"
+        "• уборка офиса\n"
+        "• аренда\n"
+        "• общак\n"
+    )
+
+    if is_admin(message):
+
+        text += (
+
+            "\n⚙️ АДМИН КОМАНДЫ\n\n"
+
+            "/announce — создать объявление\n"
+            "/setduty — сменить дежурных\n\n"
+
+            "Пример:\n"
+            "/setduty Егор Юля"
+        )
+
+    await message.answer(text)
 
 # =========================================
 # /RESTART
@@ -98,7 +145,7 @@ async def restart(message: types.Message):
     )
 
 # =========================================
-# КОМАНДА
+# /TEAM
 # =========================================
 
 @dp.message(Command("team"))
@@ -112,11 +159,14 @@ async def team(message: types.Message):
     )
 
     await message.answer(
-        f"👥 STREET FRIENDS TEAM\n\n{team_text}"
+
+        "👥 STREET FRIENDS TEAM\n\n"
+
+        f"{team_text}"
     )
 
 # =========================================
-# ДЕЖУРНЫЕ
+# /DUTY
 # =========================================
 
 @dp.message(Command("duty"))
@@ -137,7 +187,7 @@ async def duty(message: types.Message):
     )
 
 # =========================================
-# СМЕНА ДЕЖУРНЫХ
+# /SETDUTY
 # =========================================
 
 @dp.message(Command("setduty"))
@@ -146,7 +196,6 @@ async def set_duty(message: types.Message):
     if not is_private(message):
         return
 
-    # Только админ
     if not is_admin(message):
 
         await message.answer(
@@ -165,15 +214,15 @@ async def set_duty(message: types.Message):
     if not text:
 
         await message.answer(
+
             "❌ Пример:\n\n"
+
             "/setduty Егор Юля"
         )
 
         return
 
-    people = text.split()
-
-    office_duty = people
+    office_duty = text.split()
 
     duty_text = "\n".join(
         [f"• {name}" for name in office_duty]
@@ -185,69 +234,17 @@ async def set_duty(message: types.Message):
 
         f"{duty_text}"
     )
+
 # =========================================
-# СПИСОК КОМАНД
-# =========================================
-
-@dp.message(Command("help"))
-async def help_command(message: types.Message):
-
-    # Команды для всех
-    user_commands = (
-        "👥 ДОСТУПНЫЕ КОМАНДЫ\n\n"
-
-        "/start — запуск бота\n"
-        "/restart — перезапуск\n"
-        "/help — список команд\n\n"
-
-        "📌 Основные разделы:\n"
-        "• ☀️ Открытие точки\n"
-        "• 🧹 Закрытие точки\n"
-        "• 💰 Общак\n"
-        "• 🏠 Аренда\n"
-        "• 📅 Смены\n"
-        "• 👥 Команда\n"
-        "• 📍 Точки\n"
-        "• 🎉 Фесты\n"
-    )
-
-    # Если админ → показываем админ команды
-    if is_admin(message):
-
-        admin_commands = (
-            "\n⚙️ АДМИН КОМАНДЫ\n\n"
-
-            "/announce текст\n"
-            "→ отправить объявление в группу\n\n"
-
-            "Пример:\n"
-            "/announce Завтра сбор в 09:00 🔥"
-        )
-
-        await message.answer(
-            user_commands + admin_commands
-        )
-
-    else:
-
-        await message.answer(
-            user_commands
-        )
-# =========================================
-# АВТОНАПОМИНАНИЯ
-# =========================================
-# =========================================
-# ОБЪЯВЛЕНИЕ В ГРУППУ
+# /ANNOUNCE
 # =========================================
 
 @dp.message(Command("announce"))
 async def announce(message: types.Message):
 
-    # Только ЛС
     if not is_private(message):
         return
 
-    # Только админ
     if not is_admin(message):
 
         await message.answer(
@@ -256,38 +253,54 @@ async def announce(message: types.Message):
 
         return
 
-    # Получаем текст объявления
-    text = message.text.replace(
-        "/announce",
-        ""
-    ).strip()
+    waiting_announce[
+        message.from_user.id
+    ] = True
 
-    # Если текста нет
-    if not text:
+    await message.answer(
 
-        await message.answer(
+        "📢 Введите текст объявления.\n\n"
 
-            "❌ Пример:\n\n"
+        "Следующее сообщение будет "
+        "отправлено в группу 🔥"
+    )
 
-            "/announce Завтра сбор в 09:00"
-        )
+# =========================================
+# ОБРАБОТКА АНОНСА
+# =========================================
 
+@dp.message()
+async def announce_text(message: types.Message):
+
+    if not is_private(message):
         return
 
-    # Отправляем объявление в группу
+    if not waiting_announce.get(
+        message.from_user.id
+    ):
+        return
+
+    waiting_announce[
+        message.from_user.id
+    ] = False
+
     await bot.send_message(
 
         GROUP_ID,
 
         "📢 STREET FRIENDS\n\n"
 
-        f"{text}"
+        f"{message.text}"
     )
 
-    # Подтверждение админу
     await message.answer(
         "✅ Объявление отправлено"
     )
+
+# =========================================
+# АВТОНАПОМИНАНИЯ
+# =========================================
+
 async def auto_reminders():
 
     while True:
@@ -295,12 +308,13 @@ async def auto_reminders():
         now = datetime.now()
 
         # =====================================
-        # УТРЕННЕЕ НАПОМИНАНИЕ
+        # ОТКРЫТИЕ
         # =====================================
 
         if now.hour == 9 and now.minute == 0:
 
             await bot.send_message(
+
                 GROUP_ID,
 
                 "☀️ STREET FRIENDS\n\n"
@@ -312,16 +326,17 @@ async def auto_reminders():
                 "3. Проверить расходники 📦\n"
                 "4. Осмотреть ТОЧКУ 👀\n\n"
 
-                "🔥 Хорошей работы на ТОЛЕДО!"
+                "🔥 Хорошей работы!"
             )
 
         # =====================================
-        # ВЕЧЕРНЕЕ НАПОМИНАНИЕ
+        # ЗАКРЫТИЕ
         # =====================================
 
         if now.hour == 20 and now.minute == 45:
 
             await bot.send_message(
+
                 GROUP_ID,
 
                 "🌙 STREET FRIENDS\n\n"
@@ -347,13 +362,13 @@ async def auto_reminders():
         ):
 
             await bot.send_message(
+
                 GROUP_ID,
 
                 "💰 STREET FRIENDS\n\n"
 
-                "Напоминание:\n\n"
-
-                "Сегодня каждый участник кладет 25€ в ОБЩАК ❤️"
+                "Сегодня каждый участник "
+                "кладет 25€ в ОБЩАК ❤️"
             )
 
         # =====================================
@@ -371,6 +386,7 @@ async def auto_reminders():
             )
 
             await bot.send_message(
+
                 GROUP_ID,
 
                 "🧹 STREET FRIENDS\n\n"
@@ -400,11 +416,10 @@ async def auto_reminders():
         ):
 
             await bot.send_message(
+
                 GROUP_ID,
 
                 "🏠 STREET FRIENDS\n\n"
-
-                "Напоминание:\n\n"
 
                 "Сегодня оплата аренды офиса 💸"
             )
