@@ -125,6 +125,13 @@ def get_menu(lang):
 
 
 # START
+# Получение ID чата
+@dp.message(Command("id"))
+async def get_chat_id(message: types.Message):
+
+    await message.answer(
+        f"🆔 Chat ID:\n{message.chat.id}"
+    )
 @dp.message(Command("start"))
 async def start(message: types.Message):
 
