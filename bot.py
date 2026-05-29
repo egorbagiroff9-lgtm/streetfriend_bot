@@ -53,6 +53,53 @@ def is_admin(message: types.Message):
     return message.from_user.id == ADMIN_ID
 
 # =========================================
+# КНОПКИ
+# =========================================
+
+admin_keyboard = types.ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            types.KeyboardButton(
+                text="📢 Анонс"
+            )
+        ],
+        [
+            types.KeyboardButton(
+                text="👥 Команда"
+            ),
+            types.KeyboardButton(
+                text="🧹 Дежурные"
+            )
+        ],
+        [
+            types.KeyboardButton(
+                text="⚙️ Команды"
+            )
+        ]
+    ],
+    resize_keyboard=True
+)
+
+user_keyboard = types.ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            types.KeyboardButton(
+                text="👥 Команда"
+            ),
+            types.KeyboardButton(
+                text="🧹 Дежурные"
+            )
+        ],
+        [
+            types.KeyboardButton(
+                text="⚙️ Команды"
+            )
+        ]
+    ],
+    resize_keyboard=True
+)
+
+# =========================================
 # /MYID
 # =========================================
 
@@ -73,19 +120,32 @@ async def start(message: types.Message):
     if not is_private(message):
         return
 
-    await message.answer(
+    # Админ
+    if is_admin(message):
 
-        "🔥 STREET FRIENDS BOT\n\n"
+        await message.answer(
 
-        "Бот работает как система напоминаний для команды ❤️\n\n"
+            "🔥 STREET FRIENDS BOT\n\n"
 
-        "📌 Основные команды:\n\n"
+            "Ты вошел как администратор ⚙️\n\n"
 
-        "/team — команда\n"
-        "/duty — дежурные\n"
-        "/help — все команды\n"
-        "/restart — перезапуск\n"
-    )
+            "Доступна кнопка анонсов.",
+
+            reply_markup=admin_keyboard
+        )
+
+    # Пользователь
+    else:
+
+        await message.answer(
+
+            "🔥 STREET FRIENDS BOT\n\n"
+
+            "Бот работает как система "
+            "напоминаний ❤️",
+
+            reply_markup=user_keyboard
+        )
 
 # =========================================
 # /HELP
@@ -107,7 +167,7 @@ async def help_command(message: types.Message):
         "/team — команда\n"
         "/duty — дежурные\n\n"
 
-        "📌 Напоминания:\n"
+        "📌 Автонапоминания:\n"
         "• открытие точки\n"
         "• закрытие точки\n"
         "• уборка офиса\n"
@@ -121,8 +181,8 @@ async def help_command(message: types.Message):
 
             "\n⚙️ АДМИН КОМАНДЫ\n\n"
 
-            "/announce — создать объявление\n"
-            "/setduty — сменить дежурных\n\n"
+            "/announce — объявление\n"
+            "/setduty — смена дежурных\n\n"
 
             "Пример:\n"
             "/setduty Егор Юля"
@@ -266,36 +326,128 @@ async def announce(message: types.Message):
     )
 
 # =========================================
-# ОБРАБОТКА АНОНСА
+# КНОПКИ
 # =========================================
 
 @dp.message()
-async def announce_text(message: types.Message):
+async def buttons(message: types.Message):
 
     if not is_private(message):
         return
 
-    if not waiting_announce.get(
-        message.from_user.id
+    # =====================================
+    # КНОПКА АНОНСА
+    # =====================================
+
+    if (
+        is_admin(message)
+        and
+        message.text == "📢 Анонс"
     ):
+
+        waiting_announce[
+            message.from_user.id
+        ] = True
+
+        await message.answer(
+
+            "📢 Отправь текст объявления.\n\n"
+
+            "Следующее сообщение "
+            "улетит в группу 🔥"
+        )
+
         return
 
-    waiting_announce[
+    # =====================================
+    # ОБРАБОТКА АНОНСА
+    # =====================================
+
+    if waiting_announce.get(
         message.from_user.id
-    ] = False
+    ):
 
-    await bot.send_message(
+        waiting_announce[
+            message.from_user.id
+        ] = False
 
-        GROUP_ID,
+        await bot.send_message(
 
-        "📢 STREET FRIENDS\n\n"
+            GROUP_ID,
 
-        f"{message.text}"
-    )
+            "📢 STREET FRIENDS\n\n"
 
-    await message.answer(
-        "✅ Объявление отправлено"
-    )
+            f"{message.text}"
+        )
+
+        await message.answer(
+            "✅ Объявление отправлено"
+        )
+
+        return
+
+    # =====================================
+    # КОМАНДА
+    # =====================================
+
+    if message.text == "👥 Команда":
+
+        team_text = "\n".join(
+            [f"• {name}" for name in TEAM]
+        )
+
+        await message.answer(
+
+            "👥 STREET FRIENDS TEAM\n\n"
+
+            f"{team_text}"
+        )
+
+    # =====================================
+    # ДЕЖУРНЫЕ
+    # =====================================
+
+    elif message.text == "🧹 Дежурные":
+
+        duty_text = "\n".join(
+            [f"• {name}" for name in office_duty]
+        )
+
+        await message.answer(
+
+            "🧹 ДЕЖУРНЫЕ ПО ОФИСУ\n\n"
+
+            f"{duty_text}"
+        )
+
+    # =====================================
+    # КОМАНДЫ
+    # =====================================
+
+    elif message.text == "⚙️ Команды":
+
+        text = (
+
+            "👥 ДОСТУПНЫЕ КОМАНДЫ\n\n"
+
+            "/start\n"
+            "/restart\n"
+            "/help\n"
+            "/team\n"
+            "/duty\n"
+        )
+
+        if is_admin(message):
+
+            text += (
+
+                "\n⚙️ АДМИН\n\n"
+
+                "/announce\n"
+                "/setduty"
+            )
+
+        await message.answer(text)
 
 # =========================================
 # АВТОНАПОМИНАНИЯ
@@ -308,7 +460,7 @@ async def auto_reminders():
         now = datetime.now()
 
         # =====================================
-        # ОТКРЫТИЕ
+        # ОТКРЫТИЕ ТОЧКИ
         # =====================================
 
         if now.hour == 9 and now.minute == 0:
@@ -330,7 +482,7 @@ async def auto_reminders():
             )
 
         # =====================================
-        # ЗАКРЫТИЕ
+        # ЗАКРЫТИЕ ТОЧКИ
         # =====================================
 
         if now.hour == 20 and now.minute == 45:
@@ -356,9 +508,9 @@ async def auto_reminders():
         # =====================================
 
         if (
-            now.weekday() == 6 and
-            now.hour == 12 and
-            now.minute == 0
+            now.weekday() == 6
+            and now.hour == 12
+            and now.minute == 0
         ):
 
             await bot.send_message(
@@ -376,9 +528,9 @@ async def auto_reminders():
         # =====================================
 
         if (
-            now.weekday() == 3 and
-            now.hour == 12 and
-            now.minute == 0
+            now.weekday() == 3
+            and now.hour == 12
+            and now.minute == 0
         ):
 
             duty_text = "\n".join(
@@ -409,10 +561,10 @@ async def auto_reminders():
         # =====================================
 
         if (
-            now.day == 1 and
-            now.month in [2, 4, 6, 8, 10, 12] and
-            now.hour == 12 and
-            now.minute == 0
+            now.day == 1
+            and now.month in [2, 4, 6, 8, 10, 12]
+            and now.hour == 12
+            and now.minute == 0
         ):
 
             await bot.send_message(
