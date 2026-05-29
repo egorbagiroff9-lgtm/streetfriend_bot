@@ -40,6 +40,14 @@ office_duty = [
 def is_private(message: types.Message):
 
     return message.chat.type == "private"
+    
+# =========================================
+# ПРОВЕРКА АДМИНА
+# =========================================
+
+def is_admin(message: types.Message):
+
+    return message.from_user.id == ADMIN_ID
 # =========================================
 # МОЙ ID
 # =========================================
@@ -138,6 +146,15 @@ async def set_duty(message: types.Message):
     if not is_private(message):
         return
 
+    # Только админ
+    if not is_admin(message):
+
+        await message.answer(
+            "❌ Только администратор"
+        )
+
+        return
+
     global office_duty
 
     text = message.text.replace(
@@ -172,7 +189,58 @@ async def set_duty(message: types.Message):
 # =========================================
 # АВТОНАПОМИНАНИЯ
 # =========================================
+# =========================================
+# ОБЪЯВЛЕНИЕ В ГРУППУ
+# =========================================
 
+@dp.message(Command("announce"))
+async def announce(message: types.Message):
+
+    # Только ЛС
+    if not is_private(message):
+        return
+
+    # Только админ
+    if not is_admin(message):
+
+        await message.answer(
+            "❌ Только администратор"
+        )
+
+        return
+
+    # Получаем текст объявления
+    text = message.text.replace(
+        "/announce",
+        ""
+    ).strip()
+
+    # Если текста нет
+    if not text:
+
+        await message.answer(
+
+            "❌ Пример:\n\n"
+
+            "/announce Завтра сбор в 09:00"
+        )
+
+        return
+
+    # Отправляем объявление в группу
+    await bot.send_message(
+
+        GROUP_ID,
+
+        "📢 STREET FRIENDS\n\n"
+
+        f"{text}"
+    )
+
+    # Подтверждение админу
+    await message.answer(
+        "✅ Объявление отправлено"
+    )
 async def auto_reminders():
 
     while True:
