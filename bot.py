@@ -212,7 +212,36 @@ async def start(message: types.Message):
         "🌍 Choose language / Оберіть мову / Scegli lingua",
         reply_markup=language_keyboard,
     )
+# =========================================
+# /RESTART
+# =========================================
 
+@dp.message(Command("restart"))
+async def restart(message: types.Message):
+
+    chat_id = message.chat.id
+
+    # Удаляем последнее сообщение бота
+    if chat_id in last_bot_messages:
+
+        try:
+
+            await bot.delete_message(
+                chat_id,
+                last_bot_messages[chat_id]
+            )
+
+        except:
+            pass
+
+    # Показываем выбор языка заново
+    sent_message = await message.answer(
+        "🔄 Бот перезапущен\n\n🌍 Choose language / Оберіть мову / Scegli lingua",
+        reply_markup=language_keyboard,
+    )
+
+    # Сохраняем новое сообщение
+    last_bot_messages[chat_id] = sent_message.message_id
 # =========================================
 # ВЫБОР ЯЗЫКА
 # =========================================
