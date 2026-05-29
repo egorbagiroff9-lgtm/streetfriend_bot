@@ -15,37 +15,51 @@ TOKEN = os.getenv("TOKEN")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Хранение языка пользователей
+# Хранение языков пользователей
 user_languages = {}
 
 # Тексты
 texts = {
     "ru": {
-        "welcome": "👋 Добро пожаловать!\nВыберите раздел:",
+        "welcome": "👋 Добро пожаловать в Street Friends!\nВыберите раздел:",
         "choose_language": "🌍 Выберите язык:",
+
+        "schedule": "📅 Мои смены",
+        "point1": "🟢 ТОЧКА 1",
+        "point2": "🔴 ТОЧКА 2",
         "money": "💰 Общак",
-        "cleaning": "🧹 Уборки",
-        "rent": "🏠 Аренда",
-        "fests": "🎉 Фесты",
-        "settings": "⚙️ Настройки",
+        "office": "🏢 Офис",
+        "open": "☀️ Открытие",
+        "close": "🔒 Закрытие",
+        "team": "👥 Команда",
     },
+
     "ua": {
-        "welcome": "👋 Ласкаво просимо!\nОберіть розділ:",
+        "welcome": "👋 Ласкаво просимо до Street Friends!\nОберіть розділ:",
         "choose_language": "🌍 Оберіть мову:",
+
+        "schedule": "📅 Мої зміни",
+        "point1": "🟢 ТОЧКА 1",
+        "point2": "🔴 ТОЧКА 2",
         "money": "💰 Общак",
-        "cleaning": "🧹 Прибирання",
-        "rent": "🏠 Оренда",
-        "fests": "🎉 Фести",
-        "settings": "⚙️ Налаштування",
+        "office": "🏢 Офіс",
+        "open": "☀️ Відкриття",
+        "close": "🔒 Закриття",
+        "team": "👥 Команда",
     },
+
     "it": {
-        "welcome": "👋 Benvenuto!\nScegli una sezione:",
+        "welcome": "👋 Benvenuto in Street Friends!\nScegli una sezione:",
         "choose_language": "🌍 Scegli la lingua:",
+
+        "schedule": "📅 I miei turni",
+        "point1": "🟢 PUNTO 1",
+        "point2": "🔴 PUNTO 2",
         "money": "💰 Fondo comune",
-        "cleaning": "🧹 Pulizie",
-        "rent": "🏠 Affitto",
-        "fests": "🎉 Festival",
-        "settings": "⚙️ Impostazioni",
+        "office": "🏢 Ufficio",
+        "open": "☀️ Apertura",
+        "close": "🔒 Chiusura",
+        "team": "👥 Squadra",
     },
 }
 
@@ -62,15 +76,18 @@ language_keyboard = InlineKeyboardMarkup(
     ]
 )
 
-
+# Главное меню
 def get_menu(lang):
     return ReplyKeyboardMarkup(
         keyboard=[
+            [KeyboardButton(text=texts[lang]["schedule"])],
+            [KeyboardButton(text=texts[lang]["point1"])],
+            [KeyboardButton(text=texts[lang]["point2"])],
             [KeyboardButton(text=texts[lang]["money"])],
-            [KeyboardButton(text=texts[lang]["cleaning"])],
-            [KeyboardButton(text=texts[lang]["rent"])],
-            [KeyboardButton(text=texts[lang]["fests"])],
-            [KeyboardButton(text=texts[lang]["settings"])],
+            [KeyboardButton(text=texts[lang]["office"])],
+            [KeyboardButton(text=texts[lang]["open"])],
+            [KeyboardButton(text=texts[lang]["close"])],
+            [KeyboardButton(text=texts[lang]["team"])],
         ],
         resize_keyboard=True,
     )
@@ -103,20 +120,70 @@ async def menu_buttons(message: types.Message):
 
     lang = user_languages.get(message.from_user.id, "ru")
 
-    if message.text == texts[lang]["money"]:
-        await message.answer(texts[lang]["money"])
+    if message.text == texts[lang]["schedule"]:
+        await message.answer(
+            "📅 Смены:\n\n"
+            "1️⃣ 10:00–13:00\n"
+            "2️⃣ 13:00–15:30\n"
+            "3️⃣ 15:30–18:00\n"
+            "4️⃣ 18:00–21:00"
+        )
 
-    elif message.text == texts[lang]["cleaning"]:
-        await message.answer(texts[lang]["cleaning"])
+    elif message.text == texts[lang]["point1"]:
+        await message.answer("🟢 ТОЧКА 1 — Зеленая точка активна")
 
-    elif message.text == texts[lang]["rent"]:
-        await message.answer(texts[lang]["rent"])
+    elif message.text == texts[lang]["point2"]:
+        await message.answer("🔴 ТОЧКА 2 — Красная точка активна")
 
-    elif message.text == texts[lang]["fests"]:
-        await message.answer(texts[lang]["fests"])
+    elif message.text == texts[lang]["money"]:
+        await message.answer(
+            "💰 ОБЩАК\n\n"
+            "Каждое воскресенье:\n"
+            "25€ с человека"
+        )
 
-    elif message.text == texts[lang]["settings"]:
-        await message.answer(texts[lang]["settings"])
+    elif message.text == texts[lang]["office"]:
+        await message.answer(
+            "🏢 ОФИС\n\n"
+            "Следующая аренда:\n"
+            "01.06"
+        )
+
+    elif message.text == texts[lang]["open"]:
+        await message.answer(
+            "☀️ ОТКРЫТИЕ ТОЧКИ\n\n"
+            "1. Проверить заряд павербанков\n"
+            "2. Проверить шнур питания\n"
+            "3. Проверить краску\n"
+            "4. Проверить салфетки\n"
+            "5. Проверить зонтик/дождевик\n"
+            "6. Осмотреть точку"
+        )
+
+    elif message.text == texts[lang]["close"]:
+        await message.answer(
+            "🔒 ЗАКРЫТИЕ ТОЧКИ\n\n"
+            "1. Выключить программы\n"
+            "2. Выключить ноутбук\n"
+            "3. Выключить фотоаппарат\n"
+            "4. Залить краску\n"
+            "5. Поставить всё на зарядку\n"
+            "6. Убрать мусор\n"
+            "7. Протереть точку"
+        )
+
+    elif message.text == texts[lang]["team"]:
+        await message.answer(
+            "👥 КОМАНДА STREET FRIENDS\n\n"
+            "• Егор\n"
+            "• Лена\n"
+            "• Аня\n"
+            "• Марсель\n"
+            "• Никита\n"
+            "• Тарас\n"
+            "• Юля\n"
+            "• Марічка"
+        )
 
 
 async def main():
