@@ -294,9 +294,9 @@ async def auto_shift_reminders():
 
     while True:
 
-       now = datetime.now(
-    ZoneInfo("Europe/Rome")
-)
+        now = datetime.now(
+            ZoneInfo("Europe/Rome")
+        )
 
         today = now.strftime("%Y-%m-%d")
         current_time = now.strftime("%H:%M")
