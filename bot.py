@@ -4,12 +4,6 @@ from datetime import datetime
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
-from aiogram.types import (
-    ReplyKeyboardMarkup,
-    KeyboardButton,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-)
 
 TOKEN = os.getenv("TOKEN")
 
@@ -33,187 +27,18 @@ TEAM = [
     "Марічка",
 ]
 
-# Люди на уборке офиса
 office_duty = [
     "Егор",
     "Лена",
 ]
 
-# Языки пользователей
-user_languages = {}
-
-# Последние сообщения бота
-last_bot_messages = {}
-
 # =========================================
-# ТЕКСТЫ
+# КОМАНДЫ ТОЛЬКО В ЛС
 # =========================================
 
-texts = {
+def is_private(message: types.Message):
 
-    "ru": {
-        "welcome": "🔥 Street Friends Bot\nДобро пожаловать!",
-
-        "money": "💰 Общак",
-        "cleaning": "🧹 Закрытие точки",
-        "opening": "☀️ Открытие точки",
-        "rent": "🏠 Аренда",
-        "team": "👥 Команда",
-        "fests": "🎉 Фесты",
-        "schedule": "📅 Смены",
-        "points": "📍 Точки",
-        "settings": "⚙️ Настройки",
-        "back": "⬅️ Назад",
-    },
-
-    "ua": {
-        "welcome": "🔥 Street Friends Bot\nЛаскаво просимо!",
-
-        "money": "💰 Общак",
-        "cleaning": "🧹 Закриття точки",
-        "opening": "☀️ Відкриття точки",
-        "rent": "🏠 Оренда",
-        "team": "👥 Команда",
-        "fests": "🎉 Фести",
-        "schedule": "📅 Зміни",
-        "points": "📍 Точки",
-        "settings": "⚙️ Налаштування",
-        "back": "⬅️ Назад",
-    },
-
-    "it": {
-        "welcome": "🔥 Street Friends Bot\nBenvenuto!",
-
-        "money": "💰 Fondo comune",
-        "cleaning": "🧹 Chiusura punto",
-        "opening": "☀️ Apertura punto",
-        "rent": "🏠 Affitto",
-        "team": "👥 Squadra",
-        "fests": "🎉 Festival",
-        "schedule": "📅 Turni",
-        "points": "📍 Punti",
-        "settings": "⚙️ Impostazioni",
-        "back": "⬅️ Indietro",
-    },
-}
-
-# =========================================
-# КНОПКИ ЯЗЫКА
-# =========================================
-
-language_keyboard = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="🇷🇺 Русский",
-                callback_data="lang_ru"
-            ),
-            InlineKeyboardButton(
-                text="🇺🇦 Українська",
-                callback_data="lang_ua"
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="🇮🇹 Italiano",
-                callback_data="lang_it"
-            ),
-        ],
-    ]
-)
-
-# =========================================
-# ГЛАВНОЕ МЕНЮ
-# =========================================
-
-def get_menu(lang):
-
-    return ReplyKeyboardMarkup(
-        keyboard=[
-
-            [
-                KeyboardButton(text=texts[lang]["opening"]),
-                KeyboardButton(text=texts[lang]["cleaning"]),
-            ],
-
-            [
-                KeyboardButton(text=texts[lang]["money"]),
-                KeyboardButton(text=texts[lang]["rent"]),
-            ],
-
-            [
-                KeyboardButton(text=texts[lang]["schedule"]),
-                KeyboardButton(text=texts[lang]["points"]),
-            ],
-
-            [
-                KeyboardButton(text=texts[lang]["team"]),
-                KeyboardButton(text=texts[lang]["fests"]),
-            ],
-
-            [
-                KeyboardButton(text=texts[lang]["settings"]),
-            ],
-        ],
-        resize_keyboard=True,
-    )
-
-# =========================================
-# КНОПКА НАЗАД
-# =========================================
-
-def back_keyboard(lang):
-
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [
-                KeyboardButton(
-                    text=texts[lang]["back"]
-                )
-            ]
-        ],
-        resize_keyboard=True,
-    )
-
-# =========================================
-# ЧИСТЫЕ СООБЩЕНИЯ
-# =========================================
-
-async def send_clean_message(
-    message: types.Message,
-    text,
-    reply_markup=None
-):
-
-    # Удаляем сообщение пользователя
-    try:
-        await message.delete()
-    except:
-        pass
-
-    chat_id = message.chat.id
-
-    # Удаляем старое сообщение бота
-    if chat_id in last_bot_messages:
-
-        try:
-
-            await bot.delete_message(
-                chat_id,
-                last_bot_messages[chat_id]
-            )
-
-        except:
-            pass
-
-    # Отправляем новое сообщение
-    sent_message = await message.answer(
-        text,
-        reply_markup=reply_markup
-    )
-
-    # Сохраняем ID сообщения
-    last_bot_messages[chat_id] = sent_message.message_id
+    return message.chat.type == "private"
 
 # =========================================
 # /START
@@ -222,10 +47,22 @@ async def send_clean_message(
 @dp.message(Command("start"))
 async def start(message: types.Message):
 
-    await send_clean_message(
-        message,
-        "🌍 Choose language / Оберіть мову / Scegli lingua",
-        reply_markup=language_keyboard,
+    # Игнорируем группы
+    if not is_private(message):
+        return
+
+    await message.answer(
+
+        "🔥 STREET FRIENDS BOT\n\n"
+
+        "Бот работает как система напоминаний для команды ❤️\n\n"
+
+        "Доступные команды:\n\n"
+
+        "/team — команда\n"
+        "/duty — дежурные\n"
+        "/setduty — сменить дежурных\n"
+        "/restart — перезапуск\n"
     )
 
 # =========================================
@@ -235,268 +72,92 @@ async def start(message: types.Message):
 @dp.message(Command("restart"))
 async def restart(message: types.Message):
 
-    await send_clean_message(
-        message,
-        "🔄 Бот перезапущен\n\n🌍 Choose language / Оберіть мову / Scegli lingua",
-        reply_markup=language_keyboard,
+    if not is_private(message):
+        return
+
+    await message.answer(
+        "🔄 Бот успешно перезапущен"
     )
 
 # =========================================
-# ВЫБОР ЯЗЫКА
+# КОМАНДА
 # =========================================
 
-@dp.callback_query()
-async def language_selected(callback: types.CallbackQuery):
+@dp.message(Command("team"))
+async def team(message: types.Message):
 
-    lang = callback.data.split("_")[1]
+    if not is_private(message):
+        return
 
-    user_languages[callback.from_user.id] = lang
-
-    # Удаляем старое сообщение бота
-    chat_id = callback.message.chat.id
-
-    if chat_id in last_bot_messages:
-
-        try:
-
-            await bot.delete_message(
-                chat_id,
-                last_bot_messages[chat_id]
-            )
-
-        except:
-            pass
-
-    sent_message = await callback.message.answer(
-        texts[lang]["welcome"],
-        reply_markup=get_menu(lang),
+    team_text = "\n".join(
+        [f"• {name}" for name in TEAM]
     )
 
-    last_bot_messages[
-        callback.message.chat.id
-    ] = sent_message.message_id
-
-    await callback.answer()
-
-# =========================================
-# МЕНЮ
-# =========================================
-
-@dp.message()
-async def menu_buttons(message: types.Message):
-
-    lang = user_languages.get(
-        message.from_user.id,
-        "ru"
+    await message.answer(
+        f"👥 STREET FRIENDS TEAM\n\n{team_text}"
     )
 
-    # =====================================
-    # НАЗАД
-    # =====================================
+# =========================================
+# ДЕЖУРНЫЕ
+# =========================================
 
-    if message.text == texts[lang]["back"]:
+@dp.message(Command("duty"))
+async def duty(message: types.Message):
 
-        await send_clean_message(
-            message,
-            "🏠 Главное меню",
-            reply_markup=get_menu(lang)
+    if not is_private(message):
+        return
+
+    duty_text = "\n".join(
+        [f"• {name}" for name in office_duty]
+    )
+
+    await message.answer(
+
+        "🧹 ДЕЖУРНЫЕ ПО ОФИСУ\n\n"
+
+        f"{duty_text}"
+    )
+
+# =========================================
+# СМЕНА ДЕЖУРНЫХ
+# =========================================
+
+@dp.message(Command("setduty"))
+async def set_duty(message: types.Message):
+
+    if not is_private(message):
+        return
+
+    global office_duty
+
+    text = message.text.replace(
+        "/setduty",
+        ""
+    ).strip()
+
+    if not text:
+
+        await message.answer(
+            "❌ Пример:\n\n"
+            "/setduty Егор Юля"
         )
 
-    # =====================================
-    # ОТКРЫТИЕ
-    # =====================================
+        return
 
-    elif message.text == texts[lang]["opening"]:
+    people = text.split()
 
-        await send_clean_message(
-            message,
+    office_duty = people
 
-            "☀️ ОТКРЫТИЕ ТОЧКИ\n\n"
+    duty_text = "\n".join(
+        [f"• {name}" for name in office_duty]
+    )
 
-            "1. Проверить заряд павербанков 🔋\n\n"
+    await message.answer(
 
-            "2. Надежно подключить зарядный кабель 🔌\n\n"
+        "✅ Новые дежурные:\n\n"
 
-            "3. Проверить наличие:\n"
-            "• краски\n"
-            "• резинок\n"
-            "• прищепок\n"
-            "• влажных салфеток\n"
-            "• дождевика\n"
-            "• зонта\n\n"
-
-            "4. Осмотреть ТОЧКУ на дефекты 👀\n\n"
-
-            "🔥 И В БОЙ!",
-
-            reply_markup=back_keyboard(lang)
-        )
-
-    # =====================================
-    # ЗАКРЫТИЕ
-    # =====================================
-
-    elif message.text == texts[lang]["cleaning"]:
-
-        await send_clean_message(
-            message,
-
-            "🌙 ЗАКРЫТИЕ СМЕНЫ\n\n"
-
-            "1. Выключить программы 📸\n\n"
-
-            "2. Выключить ноутбук и фотоаппарат 💻\n\n"
-
-            "3. Залить краску в принтер 🖨️\n\n"
-
-            "4. Поставить точку на зарядку 🔋\n\n"
-
-            "5. Убрать мусор 🧹\n\n"
-
-            "6. Протереть точку ✨\n\n"
-
-            "7. Выкинуть мусор из офиса 🗑️",
-
-            reply_markup=back_keyboard(lang)
-        )
-
-    # =====================================
-    # ОБЩАК
-    # =====================================
-
-    elif message.text == texts[lang]["money"]:
-
-        await send_clean_message(
-            message,
-
-            "💰 ОБЩАК\n\n"
-
-            "Каждое воскресенье:\n"
-            "25€ с человека ❤️",
-
-            reply_markup=back_keyboard(lang)
-        )
-
-    # =====================================
-    # АРЕНДА
-    # =====================================
-
-    elif message.text == texts[lang]["rent"]:
-
-        await send_clean_message(
-            message,
-
-            "🏠 АРЕНДА ОФИСА\n\n"
-
-            "Следующая оплата:\n"
-            "01.06\n\n"
-
-            "Далее каждые 2 месяца.",
-
-            reply_markup=back_keyboard(lang)
-        )
-
-    # =====================================
-    # СМЕНЫ
-    # =====================================
-
-    elif message.text == texts[lang]["schedule"]:
-
-        await send_clean_message(
-            message,
-
-            "📅 СМЕНЫ\n\n"
-
-            "🟢 ТОЧКА 1\n"
-            "10:00 - 13:00\n"
-            "13:00 - 15:30\n"
-            "15:30 - 18:00\n"
-            "18:00 - 21:00\n\n"
-
-            "🔴 ТОЧКА 2\n"
-            "10:00 - 13:00\n"
-            "13:00 - 15:30\n"
-            "15:30 - 18:00\n"
-            "18:00 - 21:00",
-
-            reply_markup=back_keyboard(lang)
-        )
-
-    # =====================================
-    # ТОЧКИ
-    # =====================================
-
-    elif message.text == texts[lang]["points"]:
-
-        await send_clean_message(
-            message,
-
-            "📍 STREET FRIENDS\n\n"
-
-            "🟢 ТОЧКА 1 — Зеленая\n"
-            "🔴 ТОЧКА 2 — Красная\n\n"
-
-            "📸 Автономные фототочки.\n"
-            "Работаем на ТОЛЕДО ❤️",
-
-            reply_markup=back_keyboard(lang)
-        )
-
-    # =====================================
-    # КОМАНДА
-    # =====================================
-
-    elif message.text == texts[lang]["team"]:
-
-        team_text = "\n".join(
-            [f"• {name}" for name in TEAM]
-        )
-
-        await send_clean_message(
-            message,
-            f"👥 STREET FRIENDS TEAM\n\n{team_text}",
-            reply_markup=back_keyboard(lang)
-        )
-
-    # =====================================
-    # ФЕСТЫ
-    # =====================================
-
-    elif message.text == texts[lang]["fests"]:
-
-        await send_clean_message(
-            message,
-
-            "🎉 ФЕСТЫ\n\n"
-            "Раздел пока в разработке 🔥",
-
-            reply_markup=back_keyboard(lang)
-        )
-
-    # =====================================
-    # НАСТРОЙКИ
-    # =====================================
-
-    elif message.text == texts[lang]["settings"]:
-
-        duty_text = "\n".join(
-            [f"• {name}" for name in office_duty]
-        )
-
-        await send_clean_message(
-            message,
-
-            "⚙️ НАСТРОЙКИ\n\n"
-
-            "🧹 Дежурные по офису:\n\n"
-
-            f"{duty_text}\n\n"
-
-            "Чтобы сменить язык — /start\n"
-            "Чтобы перезапустить — /restart",
-
-            reply_markup=back_keyboard(lang)
-        )
+        f"{duty_text}"
+    )
 
 # =========================================
 # АВТОНАПОМИНАНИЯ
@@ -508,7 +169,9 @@ async def auto_reminders():
 
         now = datetime.now()
 
-        # УТРО
+        # =====================================
+        # УТРЕННЕЕ НАПОМИНАНИЕ
+        # =====================================
 
         if now.hour == 9 and now.minute == 0:
 
@@ -519,15 +182,17 @@ async def auto_reminders():
 
                 "Напоминание об открытии ТОЧКИ:\n\n"
 
-                "• проверить павербанки 🔋\n"
-                "• проверить шнур питания 🔌\n"
-                "• проверить расходники 📦\n"
-                "• осмотреть ТОЧКУ 👀\n\n"
+                "1. Проверить заряд павербанков 🔋\n"
+                "2. Проверить кабель питания 🔌\n"
+                "3. Проверить расходники 📦\n"
+                "4. Осмотреть ТОЧКУ 👀\n\n"
 
                 "🔥 Хорошей работы на ТОЛЕДО!"
             )
 
-        # ВЕЧЕР
+        # =====================================
+        # ВЕЧЕРНЕЕ НАПОМИНАНИЕ
+        # =====================================
 
         if now.hour == 20 and now.minute == 45:
 
@@ -538,14 +203,37 @@ async def auto_reminders():
 
                 "Напоминание о закрытии ТОЧКИ:\n\n"
 
-                "• выключить программы 📸\n"
-                "• выключить ноутбук 💻\n"
-                "• зарядить ТОЧКУ 🔋\n"
-                "• зарядить павербанки 🔌\n"
-                "• убрать мусор 🧹"
+                "1. Выключить программы 📸\n"
+                "2. Выключить ноутбук 💻\n"
+                "3. Зарядить ТОЧКУ 🔋\n"
+                "4. Зарядить павербанки 🔌\n"
+                "5. Убрать мусор 🧹\n"
+                "6. Протереть ТОЧКУ ✨"
             )
 
+        # =====================================
+        # ОБЩАК
+        # =====================================
+
+        if (
+            now.weekday() == 6 and
+            now.hour == 12 and
+            now.minute == 0
+        ):
+
+            await bot.send_message(
+                GROUP_ID,
+
+                "💰 STREET FRIENDS\n\n"
+
+                "Напоминание:\n\n"
+
+                "Сегодня каждый участник кладет 25€ в ОБЩАК ❤️"
+            )
+
+        # =====================================
         # УБОРКА ОФИСА
+        # =====================================
 
         if (
             now.weekday() == 3 and
@@ -566,7 +254,8 @@ async def auto_reminders():
 
                 f"{duty_text}\n\n"
 
-                "Что нужно сделать:\n"
+                "Что нужно сделать:\n\n"
+
                 "• подмести офис\n"
                 "• вынести мусор\n"
                 "• протереть поверхности\n"
@@ -574,23 +263,9 @@ async def auto_reminders():
                 "• навести порядок ❤️"
             )
 
-        # ОБЩАК
-
-        if (
-            now.weekday() == 6 and
-            now.hour == 12 and
-            now.minute == 0
-        ):
-
-            await bot.send_message(
-                GROUP_ID,
-
-                "💰 STREET FRIENDS\n\n"
-
-                "Сегодня каждый участник кладет 25€ в ОБЩАК ❤️"
-            )
-
+        # =====================================
         # АРЕНДА
+        # =====================================
 
         if (
             now.day == 1 and
@@ -603,6 +278,8 @@ async def auto_reminders():
                 GROUP_ID,
 
                 "🏠 STREET FRIENDS\n\n"
+
+                "Напоминание:\n\n"
 
                 "Сегодня оплата аренды офиса 💸"
             )
