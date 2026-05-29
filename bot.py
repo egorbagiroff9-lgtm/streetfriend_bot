@@ -792,13 +792,79 @@ async def main():
 
     print("BOT STARTED")
 
+    # =====================================
+    # КОМАНДЫ TELEGRAM MENU
+    # =====================================
+
+    await bot.set_my_commands([
+
+        types.BotCommand(
+            command="start",
+            description="Запуск бота"
+        ),
+
+        types.BotCommand(
+            command="help",
+            description="Помощь"
+        ),
+
+        types.BotCommand(
+            command="commands",
+            description="Все команды"
+        ),
+
+        types.BotCommand(
+            command="status",
+            description="Статус бота"
+        ),
+
+        types.BotCommand(
+            command="ping",
+            description="Проверка бота"
+        ),
+
+        types.BotCommand(
+            command="time",
+            description="Время Италии"
+        ),
+
+        types.BotCommand(
+            command="team",
+            description="Команда"
+        ),
+
+        types.BotCommand(
+            command="duty",
+            description="Дежурные"
+        ),
+
+        types.BotCommand(
+            command="announce",
+            description="Сделать анонс"
+        ),
+
+        types.BotCommand(
+            command="setduty",
+            description="Сменить дежурных"
+        ),
+
+        types.BotCommand(
+            command="testremind",
+            description="Тест напоминания"
+        ),
+
+        types.BotCommand(
+            command="restart",
+            description="Перезапуск"
+        ),
+    ])
+
+    # =====================================
+    # АВТОНАПОМИНАНИЯ
+    # =====================================
+
     asyncio.create_task(
         auto_reminders()
     )
 
     await dp.start_polling(bot)
-
-# =========================================
-
-if __name__ == "__main__":
-    asyncio.run(main())
